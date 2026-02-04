@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Register</title>
+    <script>
+        function checkStrength(password) {
+            let strengthBar = document.getElementById("strength");
+            let strength = 0;
+            if (password.match(/[a-z]+/)) strength++;
+            if (password.match(/[A-Z]+/)) strength++;
+            if (password.match(/[0-9]+/)) strength++;
+            if (password.match(/[$@#&!]+/)) strength++;
+            strengthBar.value = strength;
+        }
+    </script>
+</head>
+<body>
+    <h2>Register</h2>
+    <form method="POST">
+        Username: <input type="text" name="username" required><br>
+        Password: <input type="password" name="password" onkeyup="checkStrength(this.value)" required><br>
+        <progress max="4" id="strength" value="0"></progress><br>
+        Role: <select name="role">
+            <option value="user">User</option>
+            <option value="admin">Admin</option>
+        </select><br>
+        <button type="submit">Register</button>
+    </form>
+</body>
+</html>

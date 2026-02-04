@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Register</title>
+    <script>
+        function checkStrength(password) {
+            let strengthBar = document.getElementById("strength");
+            let strength = 0;
+            if (password.match(/[a-z]+/)) strength++;
+            if (password.match(/[A-Z]+/)) strength++;
+            if (password.match(/[0-9]+/)) strength++;
+            if (password.match(/[$@#&!]+/)) strength++;
+            strengthBar.value = strength;
+        }
+    </script>
+</head>
+<body>
+    <nav>
+        <a href="{{ url_for('login') }}">Login</a> |
+        <a href="{{ url_for('dashboard') }}">Dashboard</a> |
+        <a href="{{ url_for('admin') }}">Admin</a>
+    </nav>
+
+    <h2>Register</h2>
+    <form method="POST">
+        Username: <input type="text" name="username" required><br>
+        Password: <input type="password" name="password" onkeyup="checkStrength(this.value)" required><br>
+        <progress max="4" id="strength" value="0"></progress><br>
+        Role: 
+        <select name="role">
+            <option value="User">User</option>
+            <option value="Admin">Admin</option>
+        </select><br>
+        <button type="submit">Register</button>
+    </form>
+</body>
+</html>

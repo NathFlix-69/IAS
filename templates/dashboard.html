@@ -1,0 +1,18 @@
+<!DOCTYPE html>
+<html>
+<head><title>Dashboard</title></head>
+<body>
+    <nav>
+        <a href="{{ url_for('register') }}">Register</a> |
+        <a href="{{ url_for('login') }}">Login</a> |
+        <a href="{{ url_for('admin') }}">Admin</a> |
+        <a href="{{ url_for('logout') }}">Logout</a>
+    </nav>
+
+    <h2>Dashboard</h2>
+    <p>Welcome {{ current_user.username }}!</p>
+    {% if role == "admin" %}
+        <a href="{{ url_for('admin') }}">Go to Admin Page</a><br>
+    {% endif %}
+</body>
+</html>
