@@ -9,25 +9,14 @@
     </nav>
     
     <script>
-        function checkStrength(password) {
-            let strengthBar = document.getElementById("strength");
+        function validatePassword(password) {
             let spaceWarning = document.getElementById("spaceWarning");
         
             if (/\s/.test(password)) {
-                strengthBar.value = 0;
                 spaceWarning.textContent = "❌ Password cannot contain spaces!";
-                return;
             } else {
-                spaceWarning.textContent = ""; // warningan kung nay spaces
+                spaceWarning.textContent = ""; // clear warning if no spaces
             }
-        
-            let strength = 0;
-            if (password.match(/[a-z]+/)) strength++;
-            if (password.match(/[A-Z]+/)) strength++;
-            if (password.match(/[0-9]+/)) strength++;
-            if (password.match(/[$@#&!]+/)) strength++;
-        
-            strengthBar.value = strength;
         }
     </script>
 
@@ -36,8 +25,7 @@
         Username: <input type="text" name="username" required><br>
         Password: 
         <input type="password" name="password" required 
-               onkeyup="checkStrength(this.value)">
-        <br>
+               onkeyup="validatePassword(this.value)">
         <br>
         <span id="spaceWarning" style="color:red; font-weight:bold;"></span>
         <br>
