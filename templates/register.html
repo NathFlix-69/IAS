@@ -2,29 +2,19 @@
 <html>
 <head>
     <title>Register</title>
-    <script>
-        function checkStrength(password) {
-            let strengthBar = document.getElementById("strength");
-            let spaceWarning = document.getElementById("spaceWarning");
-
-            // Reject if password contains spaces
-            if (/\s/.test(password)) {
-                strengthBar.value = 0;
-                spaceWarning.textContent = "❌ Password cannot contain spaces!";
-                return;
-            } else {
-                spaceWarning.textContent = ""; 
-            }
-
-            let strength = 0;
-            if (password.match(/[a-z]+/)) strength++;
-            if (password.match(/[A-Z]+/)) strength++;
-            if (password.match(/[0-9]+/)) strength++;
-            if (password.match(/[$@#&!]+/)) strength++;
-
-            strengthBar.value = strength;
+    <style>
+        .strength-meter {
+            margin: 5px 0;
         }
-    </script>
+        .strength-label {
+            font-size: 12px;
+            margin-left: 5px;
+        }
+        .strength-weak { color: red; }
+        .strength-medium { color: orange; }
+        .strength-strong { color: green; }
+        .strength-very-strong { color: darkgreen; }
+    </style>
 </head>
 <body>
     <nav>
@@ -33,18 +23,115 @@
         <a href="{{ url_for('admin') }}">Admin</a>
     </nav>
 
+    <script>
+        function validatePassword(password) {
+            let spaceWarning = document.getElementById("spaceWarning");
+            let strengthBar = document.getElementById("strength");
+            let strengthText = document.getElementById("strengthText");
+
+            // Check if password contains spaces
+            if (/\s/.test(password)) {
+                strengthBar.value = 0;
+                strengthText.textContent = "Invalid - No space allowed";
+                strengthText.className = "strength-label strength-weak";
+                return 0;
+            } else {
+                spaceWarning.textContent = "";
+            }
+
+            // Calculate password strength
+            let strength = 0;
+            if (password.length >= 8) strength++;
+            if (password.match(/[a-z]+/)) strength++;
+            if (password.match(/[A-Z]+/)) strength++;
+            if (password.match(/[0-9]+/)) strength++;
+            if (password.match(/[$@#&!]+/)) strength++;
+
+            let displayStrength = Math.min(strength, 4);
+            strengthBar.value = displayStrength;
+
+            switch(displayStrength) {
+                case 0:
+                    strengthText.textContent = "Very Weak";
+                    strengthText.className = "strength-label strength-weak";
+                    break;
+                case 1:
+                    strengthText.textContent = "Weak";
+                    strengthText.className = "strength-label strength-weak";
+                    break;
+                case 2:
+                    strengthText.textContent = "Medium";
+                    strengthText.className = "strength-label strength-medium";
+                    break;
+                case 3:
+                    strengthText.textContent = "Strong";
+                    strengthText.className = "strength-label strength-strong";
+                    break;
+                case 4:
+                    strengthText.textContent = "Very Strong ✓";
+                    strengthText.className = "strength-label strength-very-strong";
+                    break;
+            }
+
+            return displayStrength;
+        }
+
+        function validateRegisterForm(event) {
+            const password = document.querySelector('input[name="password"]').value;
+            const strength = validatePassword(password);
+
+            if (/\s/.test(password)) {
+                event.preventDefault();
+                document.getElementById("spaceWarning").style.color = "red";
+                document.getElementById("spaceWarning").style.fontWeight = "bold";
+                document.querySelector('input[name="password"]').focus();
+                return false;
+            }
+
+            if (strength < 4) {
+                event.preventDefault();
+                const warning = document.getElementById("passwordStrengthWarning");
+                warning.textContent = "❌ Password must meet all criteria to register!";
+                warning.style.color = "red";
+                warning.style.fontWeight = "bold";
+                document.querySelector('input[name="password"]').focus();
+                return false;
+            }
+
+            return true;
+        }
+    </script>
+
     <h2>Register</h2>
-    <form method="POST">
-        Username: <input type="text" name="username" required><br>
+    <form method="POST" onsubmit="return validateRegisterForm(event)">
+        Username: <input type="text" name="username" required><br><br>
         Password: 
-        <input type="password" name="password" onkeyup="checkStrength(this.value)" required><br>
-        <progress max="4" id="strength" value="0"></progress><br>
-        <span id="spaceWarning" style="color:red; font-weight:bold;"></span><br>
+        <input type="password" name="password" required 
+               onkeyup="validatePassword(this.value)"
+               onpaste="validatePassword(this.value)"
+               oninput="validatePassword(this.value)">
+        <br>
+        <div class="strength-meter">
+            <progress max="4" id="strength" value="0"></progress>
+            <span id="strengthText" class="strength-label strength-weak">Very Weak</span>
+        </div>
+        <span id="spaceWarning" style="color:red; font-weight:bold;"></span>
+        <span id="passwordStrengthWarning" style="color:red; font-weight:bold;"></span>
+        <br><br>
+        <div style="font-size: 12px; color: #666; margin-bottom: 10px;">
+            Password must meet all criteria for registration:<br>
+            • Minimum 8 characters<br>
+            • Contains lowercase letter<br>
+            • Contains uppercase letter<br>
+            • Contains number<br>
+            • Contains special character ($@#&!)<br>
+            • No spaces allowed
+        </div>
         Role: 
         <select name="role">
             <option value="User">User</option>
             <option value="Admin">Admin</option>
-        </select><br>
+        </select><br><br>
         <button type="submit">Register</button>
     </form>
 </body>
