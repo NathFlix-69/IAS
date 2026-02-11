@@ -1,6 +1,26 @@
 <!DOCTYPE html>
 <html>
-<head><title>Login</title></head>
+<head>
+    <title>Login</title>
+    <style>
+        .strength-meter {
+            margin: 5px 0;
+        }
+        .strength-label {
+            font-size: 12px;
+            margin-left: 5px;
+        }
+        .strength-weak { color: red; }
+        .strength-medium { color: orange; }
+        .strength-strong { color: green; }
+        .strength-very-strong { color: darkgreen; }
+        .error-message {
+            color: red;
+            font-weight: bold;
+            margin: 5px 0;
+        }
+    </style>
+</head>
 <body>
     <nav>
         <a href="{{ url_for('register') }}">Register</a> |
@@ -11,24 +31,125 @@
     <script>
         function validatePassword(password) {
             let spaceWarning = document.getElementById("spaceWarning");
-        
+            let strengthBar = document.getElementById("strength");
+            let strengthText = document.getElementById("strengthText");
+            
+            // Check if password contains spaces
             if (/\s/.test(password)) {
                 spaceWarning.textContent = "❌ Password cannot contain spaces!";
+                strengthBar.value = 0;
+                strengthText.textContent = "Invalid - Contains spaces";
+                strengthText.className = "strength-label strength-weak";
+                return 0;
             } else {
-                spaceWarning.textContent = ""; // clear warning if no spaces
+                spaceWarning.textContent = "";
             }
+            
+            // Calculate password strength
+            let strength = 0;
+            if (password.length >= 8) strength++;
+            if (password.match(/[a-z]+/)) strength++;
+            if (password.match(/[A-Z]+/)) strength++;
+            if (password.match(/[0-9]+/)) strength++;
+            if (password.match(/[$@#&!]+/)) strength++;
+            
+            // Cap at 4 for the progress bar
+            let displayStrength = Math.min(strength, 4);
+            strengthBar.value = displayStrength;
+            
+            // Update strength text
+            switch(displayStrength) {
+                case 0:
+                    strengthText.textContent = "Very Weak";
+                    strengthText.className = "strength-label strength-weak";
+                    break;
+                case 1:
+                    strengthText.textContent = "Weak";
+                    strengthText.className = "strength-label strength-weak";
+                    break;
+                case 2:
+                    strengthText.textContent = "Medium";
+                    strengthText.className = "strength-label strength-medium";
+                    break;
+                case 3:
+                    strengthText.textContent = "Strong";
+                    strengthText.className = "strength-label strength-strong";
+                    break;
+                case 4:
+                    strengthText.textContent = "Very Strong ✓";
+                    strengthText.className = "strength-label strength-very-strong";
+                    break;
+            }
+            
+            return displayStrength;
         }
+
+        // Prevent form submission if password has spaces OR strength is not maximum
+        function validateLoginForm(event) {
+            const password = document.querySelector('input[name="password"]').value;
+            const strength = validatePassword(password);
+            
+            if (/\s/.test(password)) {
+                event.preventDefault();
+                document.getElementById("spaceWarning").textContent = "❌ Password cannot contain spaces!";
+                document.querySelector('input[name="password"]').focus();
+                return false;
+            }
+            
+            if (strength < 4) {
+                event.preventDefault();
+                const warning = document.getElementById("passwordStrengthWarning");
+                warning.textContent = "❌ Password strength must be 'Very Strong' to login!";
+                document.querySelector('input[name="password"]').focus();
+                return false;
+            }
+            
+            return true;
+        }
+
+        // Check on paste event
+        function handleLoginPaste(event) {
+            setTimeout(() => {
+                validatePassword(event.target.value);
+            }, 0);
+        }
+
+        // Check on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            const passwordField = document.querySelector('input[name="password"]');
+            if (passwordField) {
+                passwordField.addEventListener('paste', handleLoginPaste);
+                validatePassword(passwordField.value);
+            }
+        });
     </script>
 
     <h2>Login</h2>
-    <form method="POST">
-        Username: <input type="text" name="username" required><br>
+    
+    <!-- Display flash messages if any -->
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            {% for category, message in messages %}
+                <div class="error-message">{{ message }}</div>
+            {% endfor %}
+        {% endif %}
+    {% endwith %}
+    
+    <form method="POST" onsubmit="return validateLoginForm(event)">
+        Username: <input type="text" name="username" required><br><br>
         Password: 
         <input type="password" name="password" required 
-               onkeyup="validatePassword(this.value)">
+               onkeyup="validatePassword(this.value)"
+               onpaste="handleLoginPaste(event)"
+               oninput="validatePassword(this.value)">
         <br>
+        <div class="strength-meter">
+            <progress max="4" id="strength" value="0"></progress>
+            <span id="strengthText" class="strength-label strength-weak">Very Weak</span>
+        </div>
         <span id="spaceWarning" style="color:red; font-weight:bold;"></span>
-        <br>
+        <span id="passwordStrengthWarning" style="color:red; font-weight:bold;"></span>
+        <br><br>
         <button type="submit">Login</button>
     </form>
 </body>
