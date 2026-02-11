@@ -8,7 +8,7 @@ bcrypt = Bcrypt(app)
 login_manager = LoginManager(app)
 login_manager.login_view = "login"
 
-# Example users dictionary
+
 users = {
     "admin": {"password": bcrypt.generate_password_hash("Admin123").decode("utf-8"), "role": "Admin"},
     "user": {"password": bcrypt.generate_password_hash("User123").decode("utf-8"), "role": "User"}
@@ -52,7 +52,7 @@ def login():
             session["role"] = user.role  
             return redirect(url_for("dashboard"))
         else:
-            # Show incorrect login message and keep username filled
+            # Show incorrect login message and keeps username f
             flash("❌ Invalid username or password")
             return render_template("login.html", username=username)
 
